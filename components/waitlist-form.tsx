@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 
-// Replace with your Formspree form ID: https://formspree.io/new
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/REPLACE_WITH_FORM_ID";
+const SUPABASE_URL = "https://araqigsimkjsmwhnjesv.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyYXFpZ3NpbWtqc213aG5qZXN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNjQ1NjIsImV4cCI6MjA4Njk0MDU2Mn0.UPwIMO3U6qr6DcPvaLqs5sOGnS9WeftbkJa_JYEA4fw";
 
 type FormState = "idle" | "loading" | "success" | "error";
 
@@ -20,23 +21,31 @@ export default function WaitlistForm() {
     setErrorMsg("");
 
     try {
-      const res = await fetch(FORMSPREE_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/marketing_leads`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+            Prefer: "return=minimal,resolution=ignore-duplicates",
+          },
+          body: JSON.stringify({
+            email: email.trim().toLowerCase(),
+            source: "horizon-ai",
+            status: "new",
+          }),
         },
-        body: JSON.stringify({ email }),
-      });
+      );
 
-      if (res.ok) {
+      if (res.ok || res.status === 204) {
         setState("success");
         setEmail("");
       } else {
         const data = await res.json().catch(() => ({}));
-        setErrorMsg(
-          (data as { error?: string }).error ?? "Something went wrong. Please try again.",
-        );
+        const msg = (data as { message?: string }).message;
+        setErrorMsg(msg ?? "Something went wrong. Please try again.");
         setState("error");
       }
     } catch {
