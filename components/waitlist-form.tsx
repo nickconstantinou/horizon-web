@@ -33,8 +33,9 @@ export default function WaitlistForm() {
           },
           body: JSON.stringify({
             email: email.trim().toLowerCase(),
-            source: "horizon-ai",
-            status: "new",
+            project_id: "horizon-ai",
+            source: "landing-page",
+            status: "active",
           }),
         },
       );
