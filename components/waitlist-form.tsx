@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 
+// Replace with your Formspree form ID: https://formspree.io/new
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/REPLACE_WITH_FORM_ID";
+
 type FormState = "idle" | "loading" | "success" | "error";
 
 export default function WaitlistForm() {
@@ -17,9 +20,12 @@ export default function WaitlistForm() {
     setErrorMsg("");
 
     try {
-      const res = await fetch("/api/waitlist", {
+      const res = await fetch(FORMSPREE_ENDPOINT, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify({ email }),
       });
 
@@ -28,7 +34,9 @@ export default function WaitlistForm() {
         setEmail("");
       } else {
         const data = await res.json().catch(() => ({}));
-        setErrorMsg(data.error ?? "Something went wrong. Please try again.");
+        setErrorMsg(
+          (data as { error?: string }).error ?? "Something went wrong. Please try again.",
+        );
         setState("error");
       }
     } catch {
@@ -40,10 +48,11 @@ export default function WaitlistForm() {
   if (state === "success") {
     return (
       <div className="rounded-2xl border border-zinc-700 bg-zinc-800 p-6 text-center">
-        <p className="text-lg font-semibold text-white">You&apos;re on the list.</p>
+        <p className="text-lg font-semibold text-white">
+          You&apos;re on the list.
+        </p>
         <p className="mt-2 text-sm text-zinc-400">
-          We&apos;ll email you when early access opens. In the meantime, if you
-          have questions about the 2028 NMPA change, ask us anything.
+          We&apos;ll email you when early access opens.
         </p>
       </div>
     );
@@ -71,7 +80,7 @@ export default function WaitlistForm() {
         {state === "loading" ? "Joining…" : "Join waitlist"}
       </button>
       {state === "error" && errorMsg && (
-        <p className="text-xs text-red-400 sm:col-span-2">{errorMsg}</p>
+        <p className="mt-1 text-xs text-red-400">{errorMsg}</p>
       )}
     </form>
   );
